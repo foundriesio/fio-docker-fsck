@@ -15,6 +15,8 @@ func main() {
 	flag.BoolVar(&fixStore, "fix-store", false, "A flag to turn ON store fixing (removes broken layers)")
 	flag.Parse()
 
+	log.SetFlags(0)
+
 	s, err := NewDockerStore(dataRoot)
 	if err != nil {
 		log.Fatalf("failed to initialize Docker Store: %s", err.Error())
