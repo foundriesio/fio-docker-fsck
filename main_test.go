@@ -334,6 +334,10 @@ func TestIncorrectLowerFile(t *testing.T) {
 	s, err := NewDockerStore(d)
 	check(t, err, "failed to init Docker Store")
 
+	imageDbDir := path.Join(s.ImagesDir(), "imagedb")
+	err = os.MkdirAll(imageDbDir, 0777)
+	check(t, err, "failed to create an image DB dir")
+
 	layerDir, overlayDir := addLayer(t, s.LayersDir(), s.GraphDriverDir(), false)
 
 	// make lower file invalid
@@ -344,6 +348,10 @@ func TestIncorrectLowerFile(t *testing.T) {
 	check(t, err, "check of invalid layer dir failed")
 	checkLayerDirNotExist(t, layerDir)
 	checkFixedLayerNumb(t, 1, f)
+	_, err = os.Stat(imageDbDir)
+	if !os.IsNotExist(err) {
+		t.Fatalf("an image DB/metadata dir is supposed to be removed if at leats one layer is fixed/removed")
+	}
 }
 
 func TestCorrectLayer(t *testing.T) {

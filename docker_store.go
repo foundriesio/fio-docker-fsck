@@ -14,6 +14,7 @@ type (
 		GraphDriverDir() string
 		ReadLayersDir() ([]os.FileInfo, error)
 		ParseLayerDir(dirInfo os.FileInfo) (Layer, error)
+		RemoveImageMetadata() error
 	}
 
 	dockerStore struct {
@@ -68,4 +69,9 @@ func (d *dockerStore) ReadLayersDir() ([]os.FileInfo, error) {
 
 func (d *dockerStore) ParseLayerDir(dirInfo os.FileInfo) (Layer, error) {
 	return parseLayer(path.Join(d.layersDir, dirInfo.Name()), dirInfo.Name(), d.graphDir)
+}
+
+func (d *dockerStore) RemoveImageMetadata() error {
+	imageDbpath := path.Join(d.ImagesDir(), "imagedb")
+	return os.RemoveAll(imageDbpath)
 }

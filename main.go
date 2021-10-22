@@ -55,6 +55,12 @@ func checkStore(s DockerStore, fixStore bool) (int, error) {
 
 	if fixStore {
 		var err error
+		if len(layersToRemove) > 0 {
+			err := s.RemoveImageMetadata()
+			if err != nil {
+				return -1, fmt.Errorf("failed to remove metadata of images: %s", err.Error())
+			}
+		}
 		for _, l := range layersToRemove {
 			log.Printf("removing layer: %s", l.Dir)
 			if e := l.Remove(); e != nil {
