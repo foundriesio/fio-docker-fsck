@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"os"
 	"path"
 )
@@ -63,8 +62,20 @@ func (d *dockerStore) ReadLayersDir() ([]os.FileInfo, error) {
 		}
 		return nil, err
 	}
+	dirEntries, err := os.ReadDir(d.layersDir)
+	if err != nil {
+		return nil, err
+	}
 
-	return ioutil.ReadDir(d.layersDir)
+	var fileInfos []os.FileInfo
+	for _, entry := range dirEntries {
+		fileInfo, err := entry.Info()
+		if err != nil {
+			return nil, err
+		}
+		fileInfos = append(fileInfos, fileInfo)
+	}
+	return fileInfos, nil
 }
 
 func (d *dockerStore) ParseLayerDir(dirInfo os.FileInfo) (Layer, error) {
