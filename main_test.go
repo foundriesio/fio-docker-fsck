@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/moby/moby/pkg/stringid"
-	"github.com/opencontainers/go-digest"
-	"io/ioutil"
 	"os"
 	"path"
 	"testing"
+
+	"github.com/moby/moby/pkg/stringid"
+	"github.com/opencontainers/go-digest"
 )
 
 func check(t *testing.T, err error, prefix string) {
@@ -48,13 +48,13 @@ func addLayer(t *testing.T, dir string, overlayRootDir string, baseLayer bool) (
 	check(t, err, "failed to create a layer dir")
 
 	cacheID := stringid.GenerateRandomID()
-	err = ioutil.WriteFile(path.Join(layerDir, CacheIdFile), []byte(cacheID), 0644)
+	err = os.WriteFile(path.Join(layerDir, CacheIdFile), []byte(cacheID), 0644)
 	check(t, err, "failed to write to cacheID file")
 
-	err = ioutil.WriteFile(path.Join(layerDir, DiffFile), []byte(digest.FromBytes([]byte("foo bar")).String()), 0644)
+	err = os.WriteFile(path.Join(layerDir, DiffFile), []byte(digest.FromBytes([]byte("foo bar")).String()), 0644)
 	check(t, err, "failed to write to diff file")
 
-	err = ioutil.WriteFile(path.Join(layerDir, SizeFile), []byte("1024"), 0644)
+	err = os.WriteFile(path.Join(layerDir, SizeFile), []byte("1024"), 0644)
 	check(t, err, "failed to write to size file")
 
 	overlayDir := path.Join(overlayRootDir, cacheID)
@@ -62,13 +62,13 @@ func addLayer(t *testing.T, dir string, overlayRootDir string, baseLayer bool) (
 	check(t, err, "failed to create an overlay dir")
 
 	linkID := "SNBGQO2GG7VCPWMLRKED6NNSTK" // the len must be equal to LinkIdLength
-	err = ioutil.WriteFile(path.Join(overlayRootDir, cacheID, LinkFile), []byte(linkID), 0644)
+	err = os.WriteFile(path.Join(overlayRootDir, cacheID, LinkFile), []byte(linkID), 0644)
 	check(t, err, "failed to write to link file")
 
 	if !baseLayer {
-		err = ioutil.WriteFile(path.Join(layerDir, ParentFile), []byte(digest.FromBytes([]byte("foo bar parent")).String()), 0644)
+		err = os.WriteFile(path.Join(layerDir, ParentFile), []byte(digest.FromBytes([]byte("foo bar parent")).String()), 0644)
 		check(t, err, "failed to write to parent file")
-		err = ioutil.WriteFile(path.Join(overlayRootDir, cacheID, LowerFile), []byte("l/KFPW5XUWPXL26GW47CBVKPKAVQ"), 0644)
+		err = os.WriteFile(path.Join(overlayRootDir, cacheID, LowerFile), []byte("l/KFPW5XUWPXL26GW47CBVKPKAVQ"), 0644)
 		check(t, err, "failed to write to lower file")
 	}
 
@@ -187,7 +187,7 @@ func TestInvalidCacheID(t *testing.T) {
 	layerDir, _ := addLayer(t, s.LayersDir(), s.GraphDriverDir(), false)
 
 	// make cacheID file invalid
-	err = ioutil.WriteFile(path.Join(layerDir, CacheIdFile), []byte("foobar"), 0644)
+	err = os.WriteFile(path.Join(layerDir, CacheIdFile), []byte("foobar"), 0644)
 	check(t, err, "failed to write to cacheID file")
 
 	f, err := checkStore(s, true)
@@ -204,7 +204,7 @@ func TestInvalidDiffID(t *testing.T) {
 	layerDir, _ := addLayer(t, s.LayersDir(), s.GraphDriverDir(), false)
 
 	// make diffID file invalid
-	err = ioutil.WriteFile(path.Join(layerDir, DiffFile), []byte("sha256:foobar123"), 0644)
+	err = os.WriteFile(path.Join(layerDir, DiffFile), []byte("sha256:foobar123"), 0644)
 	check(t, err, "failed to write to diff file")
 
 	f, err := checkStore(s, true)
@@ -221,7 +221,7 @@ func TestInvalidSizeFile(t *testing.T) {
 	layerDir, _ := addLayer(t, s.LayersDir(), s.GraphDriverDir(), false)
 
 	// make size file invalid
-	err = ioutil.WriteFile(path.Join(layerDir, SizeFile), []byte("not number"), 0644)
+	err = os.WriteFile(path.Join(layerDir, SizeFile), []byte("not number"), 0644)
 	check(t, err, "failed to write to diff file")
 
 	f, err := checkStore(s, true)
@@ -270,7 +270,7 @@ func TestEmptyLinkFile(t *testing.T) {
 	layerDir, overlayDir := addLayer(t, s.LayersDir(), s.GraphDriverDir(), false)
 
 	// make link file empty
-	err = ioutil.WriteFile(path.Join(overlayDir, LinkFile), []byte(""), 0644)
+	err = os.WriteFile(path.Join(overlayDir, LinkFile), []byte(""), 0644)
 	check(t, err, "failed to write to a link file")
 
 	f, err := checkStore(s, true)
@@ -287,7 +287,7 @@ func TestInvalidParentFile(t *testing.T) {
 	layerDir, _ := addLayer(t, s.LayersDir(), s.GraphDriverDir(), false)
 
 	// make parent file invalid
-	err = ioutil.WriteFile(path.Join(layerDir, ParentFile), []byte("sha256:2377HHHHH"), 0644)
+	err = os.WriteFile(path.Join(layerDir, ParentFile), []byte("sha256:2377HHHHH"), 0644)
 	check(t, err, "failed to write to a link file")
 
 	f, err := checkStore(s, true)
@@ -320,7 +320,7 @@ func TestEmptyLowerFile(t *testing.T) {
 	layerDir, overlayDir := addLayer(t, s.LayersDir(), s.GraphDriverDir(), false)
 
 	// make lower file empty
-	err = ioutil.WriteFile(path.Join(overlayDir, LowerFile), []byte(""), 0644)
+	err = os.WriteFile(path.Join(overlayDir, LowerFile), []byte(""), 0644)
 	check(t, err, "failed to write to a lower file")
 
 	f, err := checkStore(s, true)
@@ -341,7 +341,7 @@ func TestIncorrectLowerFile(t *testing.T) {
 	layerDir, overlayDir := addLayer(t, s.LayersDir(), s.GraphDriverDir(), false)
 
 	// make lower file invalid
-	err = ioutil.WriteFile(path.Join(overlayDir, LowerFile), []byte("l/GFFFD"), 0644)
+	err = os.WriteFile(path.Join(overlayDir, LowerFile), []byte("l/GFFFD"), 0644)
 	check(t, err, "failed to write to a lower file")
 
 	f, err := checkStore(s, true)

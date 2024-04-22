@@ -3,12 +3,12 @@ package main
 import (
 	_ "crypto/sha256" // must be imported before go-digest
 	"fmt"
-	"github.com/moby/moby/pkg/stringid"
-	"github.com/opencontainers/go-digest"
-	"io/ioutil"
 	"os"
 	"path"
 	"strconv"
+
+	"github.com/moby/moby/pkg/stringid"
+	"github.com/opencontainers/go-digest"
 )
 
 type (
@@ -51,7 +51,7 @@ func parseLayer(dir string, chainID string, overlayRootDir string) (Layer, error
 	}
 
 	// read and check cache ID, stringid.GenerateRandomID(), see https://github.com/moby/moby/blob/6f6b9d2e67a8867672ff4eb35e8907af14b1bba3/layer/layer_store.go#L316
-	if b, err := ioutil.ReadFile(path.Join(dir, CacheIdFile)); err == nil {
+	if b, err := os.ReadFile(path.Join(dir, CacheIdFile)); err == nil {
 		l.CacheID = string(b)
 	} else {
 		return l, err
@@ -65,7 +65,7 @@ func parseLayer(dir string, chainID string, overlayRootDir string) (Layer, error
 		return l, err
 	}
 
-	if b, err := ioutil.ReadFile(path.Join(dir, SizeFile)); err == nil {
+	if b, err := os.ReadFile(path.Join(dir, SizeFile)); err == nil {
 		if l.Size, err = strconv.ParseUint(string(b), 0, 0); err != nil {
 			return l, err
 		}
@@ -112,7 +112,7 @@ func (l Layer) Remove() error {
 }
 
 func newDigestFromFile(f string) (digest.Digest, error) {
-	b, err := ioutil.ReadFile(f)
+	b, err := os.ReadFile(f)
 	if err != nil {
 		return "", err
 	}
@@ -130,7 +130,7 @@ func newOverlay(dir string, baseLayer bool) (Overlay, error) {
 		return Overlay{}, err
 	}
 
-	b, err := ioutil.ReadFile(path.Join(dir, LinkFile))
+	b, err := os.ReadFile(path.Join(dir, LinkFile))
 	if err != nil {
 		return o, err
 	} else {
@@ -142,7 +142,7 @@ func newOverlay(dir string, baseLayer bool) (Overlay, error) {
 	}
 
 	if !baseLayer {
-		b, err = ioutil.ReadFile(path.Join(dir, LowerFile))
+		b, err = os.ReadFile(path.Join(dir, LowerFile))
 		if err != nil {
 			return o, err
 		} else {
